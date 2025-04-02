@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Admin Panel V3</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Roblox Admin</h2>
+        <ul>
+            <li><a href="#" onclick="executeCommand('Ban người chơi')"><i class="fas fa-ban"></i> Ban Player</a></li>
+            <li><a href="#" onclick="executeCommand('Thêm Robux')"><i class="fas fa-coins"></i> Add Robux</a></li>
+            <li><a href="#" onclick="executeCommand('Gỡ Ban')"><i class="fas fa-check"></i> Unban Player</a></li>
+            <li><a href="#" onclick="executeCommand('Xóa Game')"><i class="fas fa-trash"></i> Delete Game</a></li>
+            <li><a href="#" onclick="executeCommand('Hack Level')"><i class="fas fa-user-secret"></i> Hack Level</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <header>
+            <h2>Admin Dashboard</h2>
+        </header>
+        <main>
+            <div class="robux-panel">
+                <h3>Sales of Goods</h3>
+                <span class="robux"><i class="fas fa-eye"></i> <span id="salesRobux">1(you)</span></span>
+                <div class="pending">
+                    <span>Pending Robux <i class="fas fa-clock"></i></span>
+                    <span class="robux"><i class="fas fa-coin"></i> <span id="pendingRobux">0</span></span>
+                </div>
+            </div>
+
+            <button id="fakeAddRobux">Thêm 120H Robux</button>
+
+            <input type="text" id="playerName" placeholder="Nhập tên người chơi">
+            <button class="action-btn" onclick="executeCommand('Ban', document.getElementById('playerName').value)">Ban Player</button>
+            <button class="action-btn" onclick="executeCommand('Thêm Robux', document.getElementById('playerName').value)">Add Robux</button>
+
+            <div id="logBox">
+                <h3>Log System</h3>
+                <ul id="logList"></ul>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
