@@ -1,4 +1,4 @@
-// ==== 1️⃣ Fake Login với tài khoản cố định ====
+
 function fakeLogin() {
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
@@ -7,26 +7,26 @@ function fakeLogin() {
         document.getElementById("loadingMessage").classList.remove("hidden");
 
         setTimeout(() => {
-            window.location.href = "admin.html"; // Chuyển hướng sang Admin Panel
-        }, 2000); // Delay 2s cho chuyên nghiệp
+            window.location.href = "admin.html";
+        }, 2000);
     } else {
-        document.getElementById("errorMessage").innerText = "Sai tài khoản hoặc mật khẩu!";
+        document.getElementById("errorMessage").innerText = "Wrong account or password!";
     }
 }
 
-// ==== 2️⃣ Fake Log System ====
+
 function executeCommand(command, player = "") {
     let logList = document.getElementById("logList");
     let logEntry = document.createElement("li");
 
     let playerText = player ? ` cho người chơi "${player}"` : "";
-    logEntry.textContent = `[${new Date().toLocaleTimeString()}] Lệnh "${command}"${playerText} đã được thực thi thành công.`;
+    logEntry.textContent = `[${new Date().toLocaleTimeString()}] command "${command}"${playerText} trying to complete!`;
     
     logList.appendChild(logEntry);
     logList.scrollTop = logList.scrollHeight;
 }
 
-// ==== 3️⃣ Fake Thêm 120H Robux ====
+
 document.addEventListener("DOMContentLoaded", function () {
     let addRobuxBtn = document.getElementById("fakeAddRobux");
     
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let newRobux = currentRobux + 2310;
 
             pendingRobux.innerText = newRobux;
-            alert("Thêm 120H Robux thành công!");
+            alert("We are trying to add 120H Robux 0.002% success rate!");
         });
     }
 });
