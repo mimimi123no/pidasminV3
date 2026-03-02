@@ -3,18 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Admin Panel V3 Login</title>
+    <title>Roblox Admin - Authentication</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="script.js"></script>
 </head>
-<body>
-    <div class="login-container">
-        <h2>Roblox Admin Login</h2>
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button onclick="fakeLogin()">Login</button>
-        <p id="errorMessage" class="error"></p>
-        <p id="loadingMessage" class="hidden">Signing in...</p>
+<body class="auth-body">
+    <div class="auth-container">
+        <div id="loginForm" class="auth-box">
+            <h2><i class="fas fa-shield-halved"></i> Admin Login</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUser" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPass" placeholder="Password" required>
+                </div>
+                <p id="loginError" class="error-msg"></p>
+                <button type="submit" class="btn primary-btn" id="loginBtn">Login</button>
+                <p class="switch-form">Chưa có tài khoản? <a href="#" onclick="toggleAuth()">Đăng ký ngay</a></p>
+            </form>
+        </div>
+
+        <div id="registerForm" class="auth-box hidden">
+            <h2><i class="fas fa-user-plus"></i> Register</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="regUser" placeholder="New Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPass" placeholder="New Password" required>
+                </div>
+                <p id="regError" class="error-msg"></p>
+                <p id="regSuccess" class="success-msg"></p>
+                <button type="submit" class="btn success-btn">Create Account</button>
+                <p class="switch-form">Đã có tài khoản? <a href="#" onclick="toggleAuth()">Đăng nhập</a></p>
+            </form>
+        </div>
     </div>
 </body>
 </html>
