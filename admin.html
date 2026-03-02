@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Admin Dashboard V3.5</title>
+    <title>Roblox Admin Dashboard V4.0</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script defer src="script.js"></script>
@@ -18,10 +18,8 @@
             <span id="displayUsername">Admin</span>
         </div>
         <ul class="nav-links">
-            <li><a href="#" onclick="executeCommand('Ban Player')"><i class="fas fa-ban"></i> Ban Player</a></li>
-            <li><a href="#" onclick="executeCommand('Unban Player')"><i class="fas fa-check"></i> Unban Player</a></li>
-            <li><a href="#" onclick="executeCommand('Delete Game')"><i class="fas fa-trash"></i> Delete Game</a></li>
-            <li><a href="#" onclick="executeCommand('Server Wipe')"><i class="fas fa-skull"></i> Wipe Server</a></li>
+            <li><a href="#" onclick="logAction('[SYSTEM] Commencing server wipe...')"><i class="fas fa-skull"></i> Wipe Server</a></li>
+            <li><a href="#" onclick="logAction('[SYSTEM] Database backup initiated.')"><i class="fas fa-database"></i> Backup DB</a></li>
         </ul>
         <div class="bottom-nav">
             <select id="languageSelect" onchange="changeLanguage()">
@@ -43,34 +41,34 @@
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-coins"></i></div>
                     <div class="stat-info">
-                        <h3>Sales Robux</h3>
-                        <p id="salesRobux">1,250</p>
+                        <h3>Global Sales Pool</h3>
+                        <p id="salesRobux">1,250,000</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+                    <div class="stat-icon warning"><i class="fas fa-user-ninja"></i></div>
                     <div class="stat-info">
-                        <h3>Pending Robux</h3>
-                        <p id="pendingRobux">0</p>
+                        <h3>Target's Robux</h3>
+                        <p id="targetRobux" style="font-family: monospace;">---</p>
                     </div>
                 </div>
             </div>
 
             <div class="action-panel">
-                <h3>Quick Actions</h3>
+                <h3>Player Actions</h3>
                 <div class="action-controls">
-                    <input type="text" id="playerName" placeholder="Enter Player Username...">
-                    <button class="btn primary-btn" onclick="executeCommand('Ban', document.getElementById('playerName').value)"><i class="fas fa-gavel"></i> Ban</button>
-                    <button class="btn success-btn" onclick="executeCommand('Add Robux', document.getElementById('playerName').value)"><i class="fas fa-hand-holding-dollar"></i> Give Robux</button>
-                    <button id="fakeAddRobux" class="btn warning-btn"><i class="fas fa-plus-circle"></i> Add 120k to Pool</button>
+                    <input type="text" id="playerName" placeholder="Enter Target Username...">
+                    <button class="btn info-btn" onclick="scanPlayer()"><i class="fas fa-crosshairs"></i> Scan Info</button>
+                    <button class="btn success-btn" onclick="executeCommand('Add Robux')"><i class="fas fa-hand-holding-dollar"></i> Inject 10K R$</button>
+                    <button class="btn danger-btn" onclick="executeCommand('Ban')"><i class="fas fa-gavel"></i> Ban Target</button>
                 </div>
             </div>
 
             <div class="log-panel">
-                <h3><i class="fas fa-terminal"></i> System Logs</h3>
+                <h3><i class="fas fa-terminal"></i> Terminal Logs</h3>
                 <div class="log-container">
                     <ul id="logList">
-                        <li>[System] Dashboard initialized...</li>
+                        <li>[System] Dashboard initialized. Secure connection established...</li>
                     </ul>
                 </div>
             </div>
