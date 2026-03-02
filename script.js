@@ -1,8 +1,6 @@
 // ==========================================
-// HỆ THỐNG XÁC THỰC (ĐĂNG NHẬP / ĐĂNG KÝ)
+// HỆ THỐNG AUTH
 // ==========================================
-
-// Chuyển đổi giữa 2 form
 function toggleAuth() {
     document.getElementById('loginForm').classList.toggle('hidden');
     document.getElementById('registerForm').classList.toggle('hidden');
@@ -11,152 +9,162 @@ function toggleAuth() {
     document.getElementById('regSuccess').innerText = '';
 }
 
-// Xử lý Đăng Ký
 function handleRegister(e) {
     e.preventDefault();
     const user = document.getElementById('regUser').value.trim();
     const pass = document.getElementById('regPass').value.trim();
-    
-    // Lấy database giả từ localStorage (hoặc tạo mới nếu chưa có)
     let usersDB = JSON.parse(localStorage.getItem('robloxAdminDB')) || {};
 
     if (usersDB[user]) {
         document.getElementById('regError').innerText = "Tên đăng nhập đã tồn tại!";
-        document.getElementById('regSuccess').innerText = "";
         return;
     }
-
-    // Lưu user mới
     usersDB[user] = { password: pass, role: 'admin' };
     localStorage.setItem('robloxAdminDB', JSON.stringify(usersDB));
     
-    document.getElementById('regError').innerText = "";
     document.getElementById('regSuccess').innerText = "Đăng ký thành công! Hãy đăng nhập.";
-    document.getElementById('regUser').value = '';
-    document.getElementById('regPass').value = '';
-    
-    setTimeout(toggleAuth, 1500); // Tự động chuyển qua form login sau 1.5s
+    setTimeout(toggleAuth, 1500);
 }
 
-// Xử lý Đăng Nhập
 function handleLogin(e) {
     e.preventDefault();
     const user = document.getElementById('loginUser').value.trim();
     const pass = document.getElementById('loginPass').value.trim();
-    
     let usersDB = JSON.parse(localStorage.getItem('robloxAdminDB')) || {};
     const btn = document.getElementById('loginBtn');
 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-
     setTimeout(() => {
         if (usersDB[user] && usersDB[user].password === pass) {
-            // Lưu phiên đăng nhập
             sessionStorage.setItem('loggedInUser', user);
             window.location.href = 'admin.html';
         } else {
             document.getElementById('loginError').innerText = "Sai tài khoản hoặc mật khẩu!";
             btn.innerHTML = 'Login';
         }
-    }, 800); // Giả lập độ trễ mạng
+    }, 800);
 }
 
-// Đăng xuất
 function logout() {
     sessionStorage.removeItem('loggedInUser');
     window.location.href = 'index.html';
 }
 
 // ==========================================
-// HỆ THỐNG ADMIN DASHBOARD
+// HỆ THỐNG ADMIN DASHBOARD & FAKE DATABASE
 // ==========================================
-
 const translations = {
-    vi: {
-        title: "Tổng quan bảng điều khiển",
-        successMessage: "Lệnh thực thi thành công",
-        noPlayer: "Vui lòng nhập tên người chơi!",
-        addRobux: "Đang nạp Robux vào hệ thống..."
-    },
-    en: {
-        title: "Dashboard Overview",
-        successMessage: "Command executed successfully",
-        noPlayer: "Please enter a player name!",
-        addRobux: "Injecting Robux to system..."
-    }
+    vi: { title: "Tổng quan bảng điều khiển" },
+    en: { title: "Dashboard Overview" }
 };
-
 let currentLanguage = "en";
 
-// Chạy khi trang load xong
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. Kiểm tra xem đang ở trang nào để xử lý Auth
     if (window.location.pathname.includes('admin.html')) {
         const currentUser = sessionStorage.getItem('loggedInUser');
         if (!currentUser) {
-            alert("Bạn chưa đăng nhập! Đang chuyển hướng về trang chủ...");
             window.location.href = 'index.html';
             return;
         }
-        // Hiển thị tên người dùng
-        const displayElem = document.getElementById('displayUsername');
-        if (displayElem) displayElem.innerText = currentUser;
-    }
-
-    // 2. Nút thêm Robux giả
-    let addRobuxBtn = document.getElementById("fakeAddRobux");
-    if (addRobuxBtn) {
-        addRobuxBtn.addEventListener("click", function () {
-            let pendingRobux = document.getElementById("pendingRobux");
-            let btn = this;
-            let originalText = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            btn.disabled = true;
-
-            logAction(`[SYSTEM] ${translations[currentLanguage].addRobux}`);
-
-            setTimeout(() => {
-                let currentVal = parseInt(pendingRobux.innerText.replace(/,/g, ''));
-                pendingRobux.innerText = (currentVal + 120000).toLocaleString();
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                logAction(`[SUCCESS] Thêm 120,000 Robux vào hàng chờ.`);
-            }, 1500);
-        });
+        if(document.getElementById('displayUsername')) {
+            document.getElementById('displayUsername').innerText = currentUser;
+        }
     }
 });
 
-// Đổi ngôn ngữ
 function changeLanguage() {
     let lang = document.getElementById("languageSelect").value;
     currentLanguage = lang;
     document.getElementById("dashboardTitle").innerText = translations[lang].title;
-    logAction(`[SYSTEM] Language changed to ${lang.toUpperCase()}`);
+    logAction(`[SYSTEM] Language set to ${lang.toUpperCase()}`);
 }
 
-// Ghi log ra màn hình
 function logAction(message) {
     let logList = document.getElementById("logList");
     if (!logList) return;
-    
     let logEntry = document.createElement("li");
     logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-    logList.prepend(logEntry); // Thêm log mới lên đầu
+    logList.prepend(logEntry);
 }
 
-// Thực thi lệnh (Ban, Add Robux...)
-function executeCommand(command, player = "") {
-    if ((command.includes('Ban') || command.includes('Add Robux')) && player.trim() === "") {
-        alert(translations[currentLanguage].noPlayer);
-        return;
+// Lấy Database nạn nhân từ LocalStorage
+function getVictimsDB() {
+    return JSON.parse(localStorage.getItem('robloxVictimsDB')) || {};
+}
+function saveVictimsDB(db) {
+    localStorage.setItem('robloxVictimsDB', JSON.stringify(db));
+}
+
+let isScanning = false;
+
+// Hiệu ứng Quét
+function scanPlayer() {
+    if (isScanning) return;
+    let playerName = document.getElementById('playerName').value.trim();
+    if (!playerName) { alert("Vui lòng nhập tên Target!"); return; }
+
+    isScanning = true;
+    let targetRobuxElem = document.getElementById('targetRobux');
+    let db = getVictimsDB();
+
+    // Nếu chưa từng quét thằng này, tạo cho nó 1 số dư Random rồi LƯU LẠI
+    if (typeof db[playerName] === 'undefined') {
+        db[playerName] = Math.floor(Math.random() * 80000) + 100; // Random từ 100 -> 80,000
+        saveVictimsDB(db);
     }
     
-    let target = player ? `=> Target: ${player}` : "";
-    logAction(`[API Request] Đang gửi lệnh: ${command} ${target}...`);
+    let actualRobux = db[playerName];
+    logAction(`[HACKING] Connecting to Roblox API to fetch data for [${playerName}]...`);
+    
+    let counter = 0;
+    let scanInterval = setInterval(() => {
+        targetRobuxElem.innerText = Math.floor(Math.random() * 999999).toLocaleString() + " R$";
+        counter++;
 
-    setTimeout(() => {
-        logAction(`[API Response] ${translations[currentLanguage].successMessage}: ${command}`);
-        if(player) document.getElementById('playerName').value = ''; // Xóa trắng ô input sau khi nhập
-    }, 1000); // Giả lập thời gian load server
+        if (counter > 40) { // Quét trong ~1.5 giây
+            clearInterval(scanInterval);
+            targetRobuxElem.innerText = actualRobux.toLocaleString() + " R$";
+            targetRobuxElem.style.color = "#10b981"; 
+            setTimeout(() => { targetRobuxElem.style.color = ""; }, 1000);
+
+            logAction(`[SUCCESS] Info retrieved. [${playerName}] currently has ${actualRobux.toLocaleString()} R$.`);
+            isScanning = false;
+        }
+    }, 35);
+}
+
+// Xử lý các lệnh (Ban, Add Robux)
+function executeCommand(command) {
+    let playerName = document.getElementById('playerName').value.trim();
+    if (!playerName) { alert("Vui lòng nhập tên Target trước!"); return; }
+
+    let db = getVictimsDB();
+    if (typeof db[playerName] === 'undefined') {
+        alert("Chưa có dữ liệu người này! Vui lòng bấm 'Scan Info' trước.");
+        return;
+    }
+
+    if (command === 'Ban') {
+        logAction(`[WARNING] Executing IP BAN on user [${playerName}]...`);
+        setTimeout(() => {
+            logAction(`[SUCCESS] User [${playerName}] has been permanently banned from the server.`);
+            db[playerName] = 0; // Ban thì mất hết tiền
+            saveVictimsDB(db);
+            document.getElementById('targetRobux').innerText = "0 R$";
+        }, 1500);
+    } 
+    else if (command === 'Add Robux') {
+        logAction(`[SYSTEM] Injecting 10,000 R$ into [${playerName}]'s account...`);
+        setTimeout(() => {
+            // Toán học chuẩn xác trong code
+            db[playerName] = db[playerName] + 10000;
+            saveVictimsDB(db);
+            
+            document.getElementById('targetRobux').innerText = db[playerName].toLocaleString() + " R$";
+            document.getElementById('targetRobux').style.color = "#3b82f6";
+            setTimeout(() => { document.getElementById('targetRobux').style.color = ""; }, 1000);
+            
+            logAction(`[SUCCESS] Transaction verified. New balance for [${playerName}]: ${db[playerName].toLocaleString()} R$.`);
+        }, 1200);
+    }
 }
