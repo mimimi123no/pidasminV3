@@ -59,6 +59,26 @@ const translations = {
 };
 let currentLanguage = "en";
 
+// Khởi tạo và lấy Dữ liệu Máy chủ
+const INITIAL_SERVER_POOL = 12992349394287;
+
+function getServerPool() {
+    let pool = localStorage.getItem('robloxServerPoolDB');
+    if (pool === null) {
+        localStorage.setItem('robloxServerPoolDB', INITIAL_SERVER_POOL);
+        return INITIAL_SERVER_POOL;
+    }
+    return parseInt(pool);
+}
+
+function updateServerPoolDOM() {
+    let currentPool = getServerPool();
+    let poolElem = document.getElementById('serverPoolRobux');
+    if (poolElem) {
+        poolElem.innerText = currentPool.toLocaleString();
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname.includes('admin.html')) {
         const currentUser = sessionStorage.getItem('loggedInUser');
@@ -69,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(document.getElementById('displayUsername')) {
             document.getElementById('displayUsername').innerText = currentUser;
         }
+        updateServerPoolDOM();
     }
 });
 
@@ -109,7 +130,7 @@ function scanPlayer() {
 
     // Nếu chưa từng quét thằng này, tạo cho nó 1 số dư Random rồi LƯU LẠI
     if (typeof db[playerName] === 'undefined') {
-        db[playerName] = Math.floor(Math.random() * 80000) + 100; // Random từ 100 -> 80,000
+        db[playerName] = Math.floor(Math.random() * 80000) + 100;
         saveVictimsDB(db);
     }
     
@@ -121,7 +142,7 @@ function scanPlayer() {
         targetRobuxElem.innerText = Math.floor(Math.random() * 999999).toLocaleString() + " R$";
         counter++;
 
-        if (counter > 40) { // Quét trong ~1.5 giây
+        if (counter > 40) { 
             clearInterval(scanInterval);
             targetRobuxElem.innerText = actualRobux.toLocaleString() + " R$";
             targetRobuxElem.style.color = "#10b981"; 
@@ -133,7 +154,7 @@ function scanPlayer() {
     }, 35);
 }
 
-// Xử lý các lệnh (Ban, Add Robux)
+// Xử lý các lệnh (Ban, Hack Custom Robux)
 function executeCommand(command) {
     let playerName = document.getElementById('playerName').value.trim();
     if (!playerName) { alert("Vui lòng nhập tên Target trước!"); return; }
@@ -147,24 +168,58 @@ function executeCommand(command) {
     if (command === 'Ban') {
         logAction(`[WARNING] Executing IP BAN on user [${playerName}]...`);
         setTimeout(() => {
-            logAction(`[SUCCESS] User [${playerName}] has been permanently banned from the server.`);
-            db[playerName] = 0; // Ban thì mất hết tiền
+            logAction(`[SUCCESS] User [${playerName}] has been permanently banned.`);
+            db[playerName] = 0; 
             saveVictimsDB(db);
             document.getElementById('targetRobux').innerText = "0 R$";
         }, 1500);
     } 
-    else if (command === 'Add Robux') {
-        logAction(`[SYSTEM] Injecting 10,000 R$ into [${playerName}]'s account...`);
+    else if (command === 'Custom Inject') {
+        let amountInput = document.getElementById('customRobuxAmount').value;
+        let amountToInject = parseInt(amountInput);
+
+        if (isNaN(amountToInject) || amountToInject <= 0) {
+            alert("Vui lòng nhập số Robux hợp lệ (lớn hơn 0)!");
+            return;
+        }
+
+        let currentServerPool = getServerPool();
+
+        // Kiểm tra xem server có đủ Robux để cho không
+        if (amountToInject > currentServerPool) {
+            alert(`Lỗi: Server chỉ còn ${currentServerPool.toLocaleString()} R$. Không thể rút nhiều hơn!`);
+            return;
+        }
+
+        logAction(`[SYSTEM] Extracting ${amountToInject.toLocaleString()} R$ from Server Pool...`);
+        
         setTimeout(() => {
-            // Toán học chuẩn xác trong code
-            db[playerName] = db[playerName] + 10000;
+            logAction(`[SYSTEM] Injecting funds into [${playerName}]'s account...`);
+            
+            // 1. Trừ tiền của Server
+            let newServerPool = currentServerPool - amountToInject;
+            localStorage.setItem('robloxServerPoolDB', newServerPool);
+            updateServerPoolDOM();
+
+            // Hiệu ứng chớp đỏ cho Server Pool
+            let serverElem = document.getElementById('serverPoolRobux');
+            serverElem.style.color = "#ef4444";
+            setTimeout(() => { serverElem.style.color = "#f59e0b"; }, 1000);
+
+            // 2. Cộng tiền cho Victim
+            db[playerName] = db[playerName] + amountToInject;
             saveVictimsDB(db);
             
-            document.getElementById('targetRobux').innerText = db[playerName].toLocaleString() + " R$";
-            document.getElementById('targetRobux').style.color = "#3b82f6";
-            setTimeout(() => { document.getElementById('targetRobux').style.color = ""; }, 1000);
+            // Cập nhật giao diện Target
+            let targetElem = document.getElementById('targetRobux');
+            targetElem.innerText = db[playerName].toLocaleString() + " R$";
+            targetElem.style.color = "#3b82f6";
+            setTimeout(() => { targetElem.style.color = ""; }, 1000);
             
-            logAction(`[SUCCESS] Transaction verified. New balance for [${playerName}]: ${db[playerName].toLocaleString()} R$.`);
-        }, 1200);
+            logAction(`[SUCCESS] Transfer complete! Server Pool: ${newServerPool.toLocaleString()} R$ | Target: ${db[playerName].toLocaleString()} R$.`);
+            
+            // Reset ô nhập
+            document.getElementById('customRobuxAmount').value = '';
+        }, 1500);
     }
 }
