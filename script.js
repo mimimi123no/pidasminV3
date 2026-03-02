@@ -51,16 +51,14 @@ function logout() {
 }
 
 // ==========================================
-// HỆ THỐNG ADMIN DASHBOARD & FAKE DATABASE
+// HỆ THỐNG ADMIN DASHBOARD
 // ==========================================
 const translations = {
     vi: { title: "Tổng quan bảng điều khiển" },
     en: { title: "Dashboard Overview" }
 };
-let currentLanguage = "en";
 
-// Khởi tạo và lấy Dữ liệu Máy chủ
-const INITIAL_SERVER_POOL = 12992349394287;
+const INITIAL_SERVER_POOL = 0;
 
 function getServerPool() {
     let pool = localStorage.getItem('robloxServerPoolDB');
@@ -75,7 +73,7 @@ function updateServerPoolDOM() {
     let currentPool = getServerPool();
     let poolElem = document.getElementById('serverPoolRobux');
     if (poolElem) {
-        poolElem.innerText = currentPool.toLocaleString();
+        poolElem.innerText = currentPool.toLocaleString() + " R$";
     }
 }
 
@@ -90,12 +88,19 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('displayUsername').innerText = currentUser;
         }
         updateServerPoolDOM();
+        
+        // Kích hoạt Fake Ping
+        setInterval(() => {
+            let ping = Math.floor(Math.random() * (60 - 25 + 1)) + 25; // Random ping từ 25ms đến 60ms
+            if(document.getElementById('pingValue')) {
+                document.getElementById('pingValue').innerText = ping;
+            }
+        }, 2000);
     }
 });
 
 function changeLanguage() {
     let lang = document.getElementById("languageSelect").value;
-    currentLanguage = lang;
     document.getElementById("dashboardTitle").innerText = translations[lang].title;
     logAction(`[SYSTEM] Language set to ${lang.toUpperCase()}`);
 }
@@ -108,7 +113,16 @@ function logAction(message) {
     logList.prepend(logEntry);
 }
 
-// Lấy Database nạn nhân từ LocalStorage
+function clearLogs() {
+    let logList = document.getElementById("logList");
+    if (logList) {
+        logList.innerHTML = "<li>[System] Logs have been cleared by Admin.</li>";
+    }
+}
+
+// ==========================================
+// HỆ THỐNG DATABASE PLAYER & ACTIONS
+// ==========================================
 function getVictimsDB() {
     return JSON.parse(localStorage.getItem('robloxVictimsDB')) || {};
 }
@@ -118,7 +132,6 @@ function saveVictimsDB(db) {
 
 let isScanning = false;
 
-// Hiệu ứng Quét
 function scanPlayer() {
     if (isScanning) return;
     let playerName = document.getElementById('playerName').value.trim();
@@ -128,14 +141,13 @@ function scanPlayer() {
     let targetRobuxElem = document.getElementById('targetRobux');
     let db = getVictimsDB();
 
-    // Nếu chưa từng quét thằng này, tạo cho nó 1 số dư Random rồi LƯU LẠI
     if (typeof db[playerName] === 'undefined') {
         db[playerName] = Math.floor(Math.random() * 80000) + 100;
         saveVictimsDB(db);
     }
     
     let actualRobux = db[playerName];
-    logAction(`[HACKING] Connecting to Roblox API to fetch data for [${playerName}]...`);
+    logAction(`[HACKING] Connecting to API to fetch data for [${playerName}]...`);
     
     let counter = 0;
     let scanInterval = setInterval(() => {
@@ -148,13 +160,12 @@ function scanPlayer() {
             targetRobuxElem.style.color = "#10b981"; 
             setTimeout(() => { targetRobuxElem.style.color = ""; }, 1000);
 
-            logAction(`[SUCCESS] Info retrieved. [${playerName}] currently has ${actualRobux.toLocaleString()} R$.`);
+            logAction(`[SUCCESS] Info retrieved. [${playerName}] has ${actualRobux.toLocaleString()} R$.`);
             isScanning = false;
         }
     }, 35);
 }
 
-// Xử lý các lệnh (Ban, Hack Custom Robux)
 function executeCommand(command) {
     let playerName = document.getElementById('playerName').value.trim();
     if (!playerName) { alert("Vui lòng nhập tên Target trước!"); return; }
@@ -174,52 +185,137 @@ function executeCommand(command) {
             document.getElementById('targetRobux').innerText = "0 R$";
         }, 1500);
     } 
+    else if (command === 'Kick') {
+        logAction(`[SYSTEM] Sending Kick signal to [${playerName}]'s client...`);
+        setTimeout(() => {
+            logAction(`[SUCCESS] User [${playerName}] was kicked from the server (Connection Lost).`);
+        }, 800);
+    }
+    else if (command === 'Freeze') {
+        logAction(`[SYSTEM] Injecting freeze script into [${playerName}]'s humanoid...`);
+        setTimeout(() => {
+            logAction(`[SUCCESS] User [${playerName}] movement has been disabled.`);
+        }, 800);
+    }
     else if (command === 'Custom Inject') {
         let amountInput = document.getElementById('customRobuxAmount').value;
         let amountToInject = parseInt(amountInput);
 
         if (isNaN(amountToInject) || amountToInject <= 0) {
-            alert("Vui lòng nhập số Robux hợp lệ (lớn hơn 0)!");
+            alert("Vui lòng nhập số Robux hợp lệ!");
             return;
         }
 
         let currentServerPool = getServerPool();
 
-        // Kiểm tra xem server có đủ Robux để cho không
         if (amountToInject > currentServerPool) {
-            alert(`Lỗi: Server chỉ còn ${currentServerPool.toLocaleString()} R$. Không thể rút nhiều hơn!`);
+            alert(`Lỗi: Ví chỉ còn ${currentServerPool.toLocaleString()} R$. Vui lòng Buy Robux thêm!`);
             return;
         }
 
-        logAction(`[SYSTEM] Extracting ${amountToInject.toLocaleString()} R$ from Server Pool...`);
+        logAction(`[SYSTEM] Extracting ${amountToInject.toLocaleString()} R$ from Wallet...`);
         
         setTimeout(() => {
-            logAction(`[SYSTEM] Injecting funds into [${playerName}]'s account...`);
-            
-            // 1. Trừ tiền của Server
             let newServerPool = currentServerPool - amountToInject;
             localStorage.setItem('robloxServerPoolDB', newServerPool);
             updateServerPoolDOM();
 
-            // Hiệu ứng chớp đỏ cho Server Pool
             let serverElem = document.getElementById('serverPoolRobux');
             serverElem.style.color = "#ef4444";
             setTimeout(() => { serverElem.style.color = "#f59e0b"; }, 1000);
 
-            // 2. Cộng tiền cho Victim
             db[playerName] = db[playerName] + amountToInject;
             saveVictimsDB(db);
             
-            // Cập nhật giao diện Target
             let targetElem = document.getElementById('targetRobux');
             targetElem.innerText = db[playerName].toLocaleString() + " R$";
             targetElem.style.color = "#3b82f6";
             setTimeout(() => { targetElem.style.color = ""; }, 1000);
             
-            logAction(`[SUCCESS] Transfer complete! Server Pool: ${newServerPool.toLocaleString()} R$ | Target: ${db[playerName].toLocaleString()} R$.`);
-            
-            // Reset ô nhập
+            logAction(`[SUCCESS] Transferred to [${playerName}]. Wallet remaining: ${newServerPool.toLocaleString()} R$.`);
             document.getElementById('customRobuxAmount').value = '';
         }, 1500);
     }
+}
+
+// ==========================================
+// HỆ THỐNG PROMO CODE GENERATOR
+// ==========================================
+function generateCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let p1 = ''; let p2 = '';
+    for(let i=0; i<4; i++) {
+        p1 += chars.charAt(Math.floor(Math.random() * chars.length));
+        p2 += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    let fullCode = `RBX-2026-${p1}-${p2}`; // Sử dụng context năm 2026
+    
+    document.getElementById('generatedCode').value = fullCode;
+    logAction(`[SYSTEM] Generated new unredeemed Promo Code: ${fullCode}`);
+}
+
+function copyCode() {
+    let codeInput = document.getElementById('generatedCode');
+    if (!codeInput.value) {
+        alert("Vui lòng tạo code trước!");
+        return;
+    }
+    codeInput.select();
+    codeInput.setSelectionRange(0, 99999); // Cho mobile
+    navigator.clipboard.writeText(codeInput.value);
+    
+    logAction(`[SYSTEM] Copied code ${codeInput.value} to clipboard.`);
+    alert("Đã copy code: " + codeInput.value);
+}
+
+// ==========================================
+// HỆ THỐNG MUA ROBUX VÀO VÍ
+// ==========================================
+function openBuyModal() {
+    document.getElementById('buyModal').classList.remove('hidden');
+    document.getElementById('paymentSetup').classList.remove('hidden');
+    document.getElementById('checkoutArea').classList.add('hidden');
+    document.getElementById('bankSelect').value = "";
+    document.getElementById('usdAmount').value = 1;
+}
+
+function closeBuyModal() {
+    document.getElementById('buyModal').classList.add('hidden');
+}
+
+function addPaymentMethod() {
+    let bank = document.getElementById('bankSelect').value;
+    if(!bank) { 
+        alert("Vui lòng chọn Ngân hàng hoặc Visa!"); 
+        return; 
+    }
+    
+    alert("Đã liên kết " + bank + " thành công!");
+    
+    document.getElementById('paymentSetup').classList.add('hidden');
+    document.getElementById('checkoutArea').classList.remove('hidden');
+    document.getElementById('activeBank').innerText = bank;
+}
+
+function confirmPurchase() {
+    let usdInput = document.getElementById('usdAmount').value;
+    let usd = parseInt(usdInput);
+    
+    if (isNaN(usd) || usd <= 0) {
+        alert("Số tiền không hợp lệ!");
+        return;
+    }
+
+    let robuxEarned = usd * 800;
+    
+    let currentPool = getServerPool();
+    let newPool = currentPool + robuxEarned;
+    localStorage.setItem('robloxServerPoolDB', newPool);
+    
+    updateServerPoolDOM(); 
+    
+    logAction(`[BILLING] Đã nạp $${usd} qua ${document.getElementById('activeBank').innerText}. Nhận ${robuxEarned.toLocaleString()} R$ vào Ví.`);
+    
+    alert(`Thanh toán thành công! Ví đã được cộng ${robuxEarned.toLocaleString()} R$.`);
+    closeBuyModal();
 }
